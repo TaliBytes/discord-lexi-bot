@@ -66,7 +66,7 @@ async def on_message(msg):
         cmdArgs = aCmd[1]
 
         #used for debug
-        print('Received command ${' + cmdName + '} with args' + (', ').join(cmdArgs) if cmdArgs else 'not supplied')
+        print('Received command ${' + cmdName + '} with args ' + (', ').join(cmdArgs) if cmdArgs else 'not supplied')
 
         #is command valid?
         if cmdName not in cmdList:
