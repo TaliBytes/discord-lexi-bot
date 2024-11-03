@@ -23,8 +23,37 @@ async def on_message(message):
         return
 
     #$hello command
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hiya! My name is Lexi and I wi... won\'t burn your house down!')
+    if message.content.startswith('${'):
+        aCmd = parseCmd(message.content)
+        cmdName = aCmd[0]
+        cmdArgs = aCmd[1]
+
+        if (cmdName == 'say'):
+            await message.channel.send(cmdArgs[0])
+
+
+
+
+#parse command and return its name and args to process
+def parseCmd(cmd):
+    cmdPrfx = "${"          #prefix to denote start of cmd
+    cmdSfx = "}"            #suffix to denote end of cmd
+    cmdDelim = '|'          #delim to split cmdName and args
+
+    cmd = cmd.strip()
+    cmdName = None
+    cmdArgs = []
+
+    cmdStartPos = cmd.index(cmdPrfx) + 2    #start position for cmd name and arguments
+    cmdEndPos = cmd.index(cmdSfx)           #end position for cmd name and arguments
+    cmd = cmd[cmdStartPos:cmdEndPos]        #store cmd without brackets
+
+    cmdArgs = cmd.split(cmdDelim)           #extract arguments from full command
+    cmdName = cmdArgs[0]                    #extract name from arglist
+    cmdArgs = cmdArgs[1:]                   #remove cmdName from args
+
+    return(cmdName, cmdArgs)
+
 
 
 #run the bot
