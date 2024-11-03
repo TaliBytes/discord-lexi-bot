@@ -1,4 +1,5 @@
 import discord
+import random
 
 #config
 tokenFile = open('D:/Code/discord-bot/root/token.txt', 'r')
@@ -8,6 +9,9 @@ tokenFile.close()
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+
+jokes = '../root/jokes.txt'
+nsfw_jokes = 'root/nsfw_jokes.txt'
 
 
 #return val if var is null
@@ -87,14 +91,46 @@ async def on_message(msg):
         if (cmdName == 'say'):
             await msg.channel.send(cmdArgs[0])
 
+        if (cmdName == 'hello'):
+            if cmdArgs < 1:
+                await msg.channel.send("Hey! My name is Lexi. It's nice to meet you!")
+            else:
+                await msg.channel.send(f"Everyone welcome {cmdArgs[1]} to the server! We're so glad to have you here <3.")
+        
+        if (cmdName == 'joke'):
+            joke_dir = jokes if cmdArgs[0] == False or cmdArgs.length < 1 else nsfw_jokes
+            with open(joke_dir, 'r') as file:
+                lines = file.readlines()
+                random_line = random.choice(lines)
+                await msg.channel.send(random_line)
+                
+        if (cmdName == 'add-joke'):
+            joke_dir = jokes if cmdArgs[1] == False or cmdArgs.length < 2 else nsfw_jokes
+            with open(joke_dir, 'a') as file:
+                file.write(cmdArgs[0])
+                await msg.channel.send("HAHAHA. I get it. Your joke is so funny. I've added it to my list of favorites.")
+
+        if (cmdName == 'help'):
+            string = '';
+            for command in cmdList.Keys:
+                string = (
+                    f"{string} "
+                    f"{cmdList[command][1]}: {cmdList[command][0]} "
+                    f"{f'Requires at least {cmdList[command][2]} arguments.\n' if cmdList[command][2] != 0 else ''}"
+                )
+
+            await msg.channel.send(string)
 
 
 #a list of valid commands, they usage, syntax, and number of arguments that they require
-cmdList = {
-    #name, usage, syntax, requiredArgs
-    'say': ['Have Lexi send a message in the current channel.', '${say|message}', 1]
+cmdList: dict[str, list[str, str, int]] = {
+    # name, usage, syntax, requiredArgs
+    'say': ['Have Lexi send a message in the current channel.', '${say|message}', 1],
+    'hello': ['Have Lexi send you a polite greeting in the current channel.', '${hello|user}', 0],
+    'joke': ['Have Lexi tell a randomly selected joke to lighten the mood.', '${joke|nsfw}', 0],
+    'add-joke': ['Add a joke to the list of randomly selected jokes used by the joke command.', '${add-joke|joke|nsfw|}', 1],
+    'help': ['Shows a list of commands and their usage.', '${help}', 0],
 }
-
 
 
 #start the bot
