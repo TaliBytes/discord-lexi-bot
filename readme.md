@@ -3,4 +3,4 @@
 ## included directories
 
 - botlib... includes files for the bot
-- root... includes static files, etc
+- root... includes static files, token, etc
