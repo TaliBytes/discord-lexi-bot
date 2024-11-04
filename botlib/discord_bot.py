@@ -1,11 +1,4 @@
 import discord
-import os
-
-cwd = os.getcwd()
-files = os.listdir(cwd)
-print("Files in %r: %s" % (cwd, files))
-
-
 
 #config
 tokenFile = open('root/token.txt', 'r')
@@ -15,6 +8,9 @@ tokenFile.close()
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+
+jokes = '../root/jokes.txt'
+nsfw_jokes = 'root/nsfw_jokes.txt'
 
 
 #return val if var is null
@@ -67,7 +63,7 @@ async def on_message(msg):
         return
     
     #if command
-    if (msg.content.startswith('${') & msg.content.endswith('}')):
+    if (msg.content.strip().startswith('${') & msg.content.strip().endswith('}')):
         aCmd = parseCmd(msg.content)
         cmdName = aCmd[0]
         cmdArgs = aCmd[1]
