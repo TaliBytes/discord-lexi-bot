@@ -9,9 +9,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-jokes = '../root/jokes.txt'
-nsfw_jokes = 'root/nsfw_jokes.txt'
-
 
 #return val if var is null
 def isnone(var, val):
@@ -84,32 +81,64 @@ async def on_message(msg):
         if (len(isnone(cmdArgs,'')) < requiredArgs):
             cmdSyntax = cmdList[cmdName][1]             #get syntax for error message
             print('Incorrect ${' + cmdName + '} syntax; correct: ' + cmdSyntax)
-            await msg.channel.send('${' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'syntax: ' + cmdSyntax)
+            await msg.channel.send('${' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
+
 
 
         #ACTUAL COMMAND OPTIONS BEGIN HERE:
         if (cmdName == 'SAY'):
-            await msg.channel.send(cmdArgs[0])
+            aMsg = ''
+            if (str(msg.author).lower() == 'ladysavant_'):
+                aMsg = cmdArgs[0]
+            else:
+                aMsg = f'@everyone, behold {msg.author.mention}\'s futile attempt to wield the power that is me!\nKNOW YOUR PLACE, FIEND! Bow before Her Brilliance for only she may wield the TRUE say command with grace, wisdom, and tomfoolery.'
+
+            await msg.channel.send(aMsg)
             return
         
+
         elif (cmdName == 'HELP'):
-            print('HELP command incomplete')
+            aMsg = ''
+
+            if cmdArgs:
+                targetCmdName = cmdArgs[0].upper()
+                
+                if targetCmdName not in cmdList:
+                    aMsg = f'{targetCmdName} is not a valid command. Use ${{help}} for a list of commands.'
+                else:
+                    aMsg = (
+                        f'The {targetCmdName} command... {cmdList[targetCmdName][0]}\n'     #the command, required args, usage
+                        f'Syntax: {cmdList[targetCmdName][1]} requires {cmdList[targetCmdName][2]} argument(s).'
+                    )
+            else:
+                aMsg = '## Available Commands For Lexi\n'
+                for idx, cmd in enumerate(cmdList):
+                    if idx == 0: continue #skip first command BADGUY
+                    aMsg = (
+                        f'{aMsg} '                  #current message, then append
+                        f'- {cmdList[cmd][1]}\n'    #the command name/syntax
+                    )
+            
+            await msg.channel.send(aMsg)
             return
 
+
+        #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
         else:
-            #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             print('cmdErr-01... a cmd passed the "cmdName not in cmdList" check, but logic is absent.')
             await msg.channel.send('cmdErr-01. Please contact a developer to debug.')
 
 
 
-#a list of valid commands, they usage, syntax, and number of arguments that they require
+#an alphabetical-ordered list of valid commands, they usage, syntax, and number of arguments that they require
 cmdList = {
     #name, usage, syntax, requiredArgs
-    'SAY': ['Have Lexi send a message in the current channel.', '${say|message}', 1],
+    'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '$\{badguy\}', 0],           #LEAVE BADGUY ON FIRST LINE
+
+    #commands to iterate over when using ${help}...
     'HELP': ['Have Lexi tell list all commands ($\{help\}) or details about one command (${help|cmdName}).', '$\{help\} or ${help|cmdName}', 0],
-    'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '$\{badguy\}', 0]
+    'SAY': ['Have Lexi send a message in the current channel.', '${say|message}', 1]
 }
 
 
