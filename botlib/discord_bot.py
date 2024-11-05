@@ -94,6 +94,7 @@ async def on_message(msg):
             else:
                 aMsg = f'@everyone, behold {msg.author.mention}\'s futile attempt to wield the power that is me!\nKNOW YOUR PLACE, FIEND! Bow before Her Brilliance for only she may wield the TRUE say command with grace, wisdom, and tomfoolery.'
 
+            await msg.delete()
             await msg.channel.send(aMsg)
             return
         
@@ -124,6 +125,30 @@ async def on_message(msg):
             return
 
 
+        elif (cmdName == 'ROLES'):
+            await msg.channel.send('$\{ROLES\} is an incomplete feature')
+
+
+        elif (cmdName == 'ROLES-JOINED'):
+            await msg.channel.send('${ROLES-JOINED} is an incomplete feature')
+
+
+        elif (cmdName == 'ROLE-CREATE'):
+            await msg.channel.send('${ROLE-CREATE} is an incomplete feature')
+
+            
+        elif (cmdName == 'ROLE-DELETE'):
+            await msg.channel.send('${ROLE-DELETE} is an incomplete feature')
+
+
+        elif (cmdName == 'ROLE-GRANT'):
+            await msg.channel.send('${ROLE-GRANT} is an incomplete feature')
+
+
+        elif (cmdName == 'ROLE-REVOKE'):
+            await msg.channel.send('${ROLE-REVOKE} is an incomplete feature')
+
+
         #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
         else:
             print('cmdErr-01... a cmd passed the "cmdName not in cmdList" check, but logic is absent.')
@@ -137,7 +162,13 @@ cmdList = {
     'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '$\{badguy\}', 0],           #LEAVE BADGUY ON FIRST LINE
 
     #commands to iterate over when using ${help}...
-    'HELP': ['Have Lexi tell list all commands ($\{help\}) or details about one command (${help|cmdName}).', '$\{help\} or ${help|cmdName}', 0],
+    'HELP': ['Have Lexi tell list al\l commands ($\{help\}) or details about one command (${help|cmdName}).', '$\{help\} or ${help|cmdName}', 0],
+    'ROLES': ['Ask Lexi what rolls exist on the server.', '$\{ROLES\}', 0],
+    'ROLES-JOINED': ['Have Lexi list what roles a server member has', '${roles-joined|serverMember}', 1],
+    'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', '${roll-create|roleName}', 1],
+    'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', '${roll-delete|roleName}', 1],
+    'ROLE-GRANT': ['Have Lexi grant a roll from the $\{roles\} list. Only admins can use serverMember arg. Leave blank for self.', '${role-grant|roleName} or ${role-grant|roleName|serverMember}', 1],
+    'ROLE-REVOKE': ['Have Lexi revoke a roll from a ${roles-joined|serverMember} list. Only admins can use serverMember arg. Leave blank for self.', '${role-revoke|roleName} or ${role-revoke|roleName|serverMember}', 1],
     'SAY': ['Have Lexi send a message in the current channel.', '${say|message}', 1]
 }
 
