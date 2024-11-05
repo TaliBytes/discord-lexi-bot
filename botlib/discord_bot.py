@@ -163,7 +163,7 @@ cmdList = {
 
     #commands to iterate over when using ${help}...
     'HELP': ['Have Lexi tell list al\l commands ($\{help\}) or details about one command (${help|cmdName}).', '$\{help\} or ${help|cmdName}', 0],
-    'ROLES': ['Ask Lexi what rolls exist on the server.', '$\{ROLES\}', 0],
+    'ROLES': ['Ask Lexi what rolls exist on the server.', '$\{roles\}', 0],
     'ROLES-JOINED': ['Have Lexi list what roles a server member has', '${roles-joined|serverMember}', 1],
     'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', '${roll-create|roleName}', 1],
     'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', '${roll-delete|roleName}', 1],
