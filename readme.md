@@ -4,6 +4,7 @@ Introducing to Lexi Bot, a Discord bot created for Savant's Server of Friends! L
 
 ## Features
 
+- Features are modular! They can easily be enabled, disabled, or built upon.
 - Custom Commands: Unique commands tailored for Savant's Server of Friends.
 - Server Moderation: Helps keep the server safe and organized.
 
@@ -23,11 +24,12 @@ To run Lexi, you'll need:
 2. Navigate to the repository with `cd discord-lexi-bot`
 3. Install dependencies `pip install discord.py`
 4. [Add the Discord bot to your server using the *Developer Portal*](https://realpython.com/how-to-make-a-discord-bot-python/#how-to-make-a-discord-bot-in-the-developer-portal)
+5. To disable a feature, move the corresponding file from "/modules" dir to "/modules/disabled" dir. Restart Lexi.
 
 ### Running Lexi
 
 Lexi should now be online and ready to use in the server of your choosing.
-Run the python script using an internet-enabled device. 
+Run the python script using an internet-enabled device.
 
 ## Syntax & Usage
 
