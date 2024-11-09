@@ -1,3 +1,4 @@
 #ignored token file
-root/token.txt
 botlib/__pycache__/
+modules/__pycache__/
+root/token.txt
