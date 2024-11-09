@@ -18,6 +18,7 @@ async def help_command(msg, cmdArgs, client):
 
         #invalid command
         if targetCmdName not in config.cmdList:
+            print(f'${targetCmdName} is an invalid command. Failed help command lookup.')
             aMsg = f'{targetCmdName} is not a valid command. Use ${{help}} for a list of commands.'
         
         #specific help for one command

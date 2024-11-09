@@ -99,7 +99,7 @@ async def on_message(msg):
 
         #is command valid?
         if cmdName not in config.cmdList:
-            print('${' + cmdName + '} is an invalid command.')
+            print('${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
             await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
             return
         else: 
@@ -126,10 +126,6 @@ async def on_message(msg):
             else:
                 print(f'cmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
                 await msg.channel.send(f'cmdErr-01... {cmdName} is not implemented yet.')
-
-        #command not in list
-        else:
-            await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
 
 
 
