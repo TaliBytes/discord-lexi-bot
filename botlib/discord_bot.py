@@ -1,4 +1,5 @@
-import discord
+import discord; from discord.ext import commands
+import config
 import importlib
 import inspect
 import os
@@ -11,42 +12,6 @@ tokenFile.close()
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
-
-
-
-
-#an alphabetical-ordered list of valid commands, they usage, syntax, and number of arguments that they require
-cmdList = {
-    #name, usage, syntax, requiredArgs
-    'ROLES': ['Ask Lexi what rolls exist on the server.', '${{roles}}', 0],
-    'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '${{badguy}}', 0],           #LEAVE BADGUY ON FIRST LINE
-
-    #commands to iterate over when using ${help}...
-    'ROLES-JOINED': ['Have Lexi list what roles a server member has', '${roles-joined|serverMember}', 1],
-    'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', '${roll-create|roleName}', 1],
-    'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', '${roll-delete|roleName}', 1],
-    'ROLE-GRANT': ['Have Lexi grant a roll from the ${{roles}} list. Only admins can use serverMember arg. Leave blank for self.', '${role-grant|roleName} or ${role-grant|roleName|serverMember}', 1],
-    'ROLE-REVOKE': ['Have Lexi revoke a roll from a ${roles-joined|serverMember} list. Only admins can use serverMember arg. Leave blank for self.', '${role-revoke|roleName} or ${role-revoke|roleName|serverMember}', 1],
-}
-
-#import additional modules
-module_dir = os.path.join(os.path.dirname(__file__), 'modules')
-for filename in os.listdir(module_dir):
-    if filename.endswith('.py'):
-        module_name = filename[:-3]
-        module = importlib.import_module(f"modules.{module_name}")
-        
-        #add each module's commands to cmdList
-        cmdList.update(module.module_cmdList)
-
-        #register each async function in the module as a command
-        for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
-            globals()[name] = func
-
-        #print("Registered commands:", cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
-
-#sort cmd list alphabetically
-cmdList = dict(sorted(cmdList.items()))  
 
 
 
@@ -95,6 +60,25 @@ def parseCmd(cmd):
 async def on_ready():
     print(f'Logged in as {client.user}.')
 
+    #import additional modules and commands
+    module_dir = os.path.join(os.path.dirname(__file__), 'modules')
+    for filename in os.listdir(module_dir):
+        if filename.endswith('.py'):
+            module_name = filename[:-3]
+            module = importlib.import_module(f"modules.{module_name}")
+
+            #add each module's commands to cmdList
+            config.cmdList.update(module.module_cmdList)
+
+            #register each async function in the module as a command
+            for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
+                globals()[name] = func
+
+            #print("Registered commands:", cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
+
+    #sort cmd list alphabetically
+    config.cmdList = dict(sorted(config.cmdList.items())) 
+    
 
 
 
@@ -114,29 +98,29 @@ async def on_message(msg):
         print('Received command ${' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
         #is command valid?
-        if cmdName not in cmdList:
+        if cmdName not in config.cmdList:
             print('${' + cmdName + '} is an invalid command.')
             await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
             return
         else: 
             #get number of arguments required for a command    
-            requiredArgs = cmdList[cmdName][2]
+            requiredArgs = config.cmdList[cmdName][2]
 
         #not enough args supplied
         if (len(isnone(cmdArgs,'')) < requiredArgs):
-            cmdSyntax = cmdList[cmdName][1]             #get syntax for error message
+            cmdSyntax = config.cmdList[cmdName][1]             #get syntax for error message
             print('Incorrect ${' + cmdName + '} syntax; correct: ' + cmdSyntax)
             await msg.channel.send('${' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
         #process the command
-        if cmdName in cmdList:
+        if cmdName in config.cmdList:
             #get command function
             command_function = globals().get(f"{cmdName.lower()}_command")
 
             #execute command function
             if command_function:
-                await command_function(msg, cmdArgs)
+                await command_function(msg, cmdArgs, client)
 
             #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             else:
