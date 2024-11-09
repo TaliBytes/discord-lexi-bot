@@ -1,4 +1,7 @@
 import discord
+import importlib
+import inspect
+import os
 
 #config
 tokenFile = open('root/token.txt', 'r')
@@ -10,11 +13,51 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 
+
+
+#an alphabetical-ordered list of valid commands, they usage, syntax, and number of arguments that they require
+cmdList = {
+    #name, usage, syntax, requiredArgs
+    'ROLES': ['Ask Lexi what rolls exist on the server.', '${{roles}}', 0],
+    'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '${{badguy}}', 0],           #LEAVE BADGUY ON FIRST LINE
+
+    #commands to iterate over when using ${help}...
+    'ROLES-JOINED': ['Have Lexi list what roles a server member has', '${roles-joined|serverMember}', 1],
+    'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', '${roll-create|roleName}', 1],
+    'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', '${roll-delete|roleName}', 1],
+    'ROLE-GRANT': ['Have Lexi grant a roll from the ${{roles}} list. Only admins can use serverMember arg. Leave blank for self.', '${role-grant|roleName} or ${role-grant|roleName|serverMember}', 1],
+    'ROLE-REVOKE': ['Have Lexi revoke a roll from a ${roles-joined|serverMember} list. Only admins can use serverMember arg. Leave blank for self.', '${role-revoke|roleName} or ${role-revoke|roleName|serverMember}', 1],
+}
+
+#import additional modules
+module_dir = os.path.join(os.path.dirname(__file__), 'modules')
+for filename in os.listdir(module_dir):
+    if filename.endswith('.py'):
+        module_name = filename[:-3]
+        module = importlib.import_module(f"modules.{module_name}")
+        
+        #add each module's commands to cmdList
+        cmdList.update(module.module_cmdList)
+
+        #register each async function in the module as a command
+        for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
+            globals()[name] = func
+
+        #print("Registered commands:", cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
+
+#sort cmd list alphabetically
+cmdList = dict(sorted(cmdList.items()))  
+
+
+
+
 #return val if var is null
 def isnone(var, val):
     if var is None:
         return val
     return var
+
+
 
 
 #parse command and return its name and args to process
@@ -46,10 +89,13 @@ def parseCmd(cmd):
 
 
 
+
 #when bot logs in
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user}.')
+
+
 
 
 #when bot receives a command
@@ -59,19 +105,18 @@ async def on_message(msg):
     if msg.author == client.user:
         return
     
-    #if command
     if (msg.content.strip().startswith('${') & msg.content.strip().endswith('}')):
+        #prase command for processing
         aCmd = parseCmd(msg.content)
         cmdName = aCmd[0]
         cmdArgs = aCmd[1]
 
-        #used for debug
         print('Received command ${' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
         #is command valid?
         if cmdName not in cmdList:
             print('${' + cmdName + '} is an invalid command.')
-            await msg.channel.send('${' + cmdName + '} is not a valid command. Do $\{help\} to get a list of commands.')
+            await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
             return
         else: 
             #get number of arguments required for a command    
@@ -84,93 +129,24 @@ async def on_message(msg):
             await msg.channel.send('${' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
+        #process the command
+        if cmdName in cmdList:
+            #get command function
+            command_function = globals().get(f"{cmdName.lower()}_command")
 
+            #execute command function
+            if command_function:
+                await command_function(msg, cmdArgs)
 
-        #ACTUAL COMMAND OPTIONS BEGIN HERE:
-        if (cmdName == 'SAY'):
-            aMsg = ''
-            if (str(msg.author).lower() == 'ladysavant_'):
-                aMsg = cmdArgs[0]
+            #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             else:
-                aMsg = f'@everyone, behold {msg.author.mention}\'s futile attempt to wield the power that is me!\nKNOW YOUR PLACE, FIEND! Bow before Her Brilliance for only she may wield the TRUE say command with grace, wisdom, and tomfoolery.'
+                print(f'cmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
+                await msg.channel.send(f'cmdErr-01... {cmdName} is not implemented yet.')
 
-            await msg.delete()
-            await msg.channel.send(aMsg)
-            return
-        
-
-        elif (cmdName == 'HELP'):
-            aMsg = ''
-
-            if cmdArgs:
-                targetCmdName = cmdArgs[0].upper()
-                
-                if targetCmdName not in cmdList:
-                    aMsg = f'{targetCmdName} is not a valid command. Use ${{help}} for a list of commands.'
-                else:
-                    aMsg = (
-                        f'The {targetCmdName} command... {cmdList[targetCmdName][0]}\n'     #the command, required args, usage
-                        f'Syntax: {cmdList[targetCmdName][1]} requires {cmdList[targetCmdName][2]} argument(s).'
-                    )
-            else:
-                aMsg = '## Available Commands For Lexi\n'
-                for idx, cmd in enumerate(cmdList):
-                    if idx == 0: continue #skip first command BADGUY
-                    aMsg = (
-                        f'{aMsg} '                  #current message, then append
-                        f'- {cmdList[cmd][1]}\n'    #the command name/syntax
-                    )
-            
-            await msg.channel.send(aMsg)
-            return
-
-
-        elif (cmdName == 'ROLES'):
-            await msg.channel.send('$\{ROLES\} is an incomplete feature')
-
-
-        elif (cmdName == 'ROLES-JOINED'):
-            await msg.channel.send('${ROLES-JOINED} is an incomplete feature')
-
-
-        elif (cmdName == 'ROLE-CREATE'):
-            await msg.channel.send('${ROLE-CREATE} is an incomplete feature')
-
-            
-        elif (cmdName == 'ROLE-DELETE'):
-            await msg.channel.send('${ROLE-DELETE} is an incomplete feature')
-
-
-        elif (cmdName == 'ROLE-GRANT'):
-            await msg.channel.send('${ROLE-GRANT} is an incomplete feature')
-
-
-        elif (cmdName == 'ROLE-REVOKE'):
-            await msg.channel.send('${ROLE-REVOKE} is an incomplete feature')
-
-
-        #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
+        #command not in list
         else:
-            print('cmdErr-01... a cmd passed the "cmdName not in cmdList" check, but logic is absent.')
-            await msg.channel.send('cmdErr-01. Please contact a developer to debug.')
+            await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
 
-
-
-#an alphabetical-ordered list of valid commands, they usage, syntax, and number of arguments that they require
-cmdList = {
-    #name, usage, syntax, requiredArgs
-    'BADGUY': ['Command intentionally missing logic for debug/test purposes.', '$\{badguy\}', 0],           #LEAVE BADGUY ON FIRST LINE
-
-    #commands to iterate over when using ${help}...
-    'HELP': ['Have Lexi tell list al\l commands ($\{help\}) or details about one command (${help|cmdName}).', '$\{help\} or ${help|cmdName}', 0],
-    'ROLES': ['Ask Lexi what rolls exist on the server.', '$\{roles\}', 0],
-    'ROLES-JOINED': ['Have Lexi list what roles a server member has', '${roles-joined|serverMember}', 1],
-    'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', '${roll-create|roleName}', 1],
-    'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', '${roll-delete|roleName}', 1],
-    'ROLE-GRANT': ['Have Lexi grant a roll from the $\{roles\} list. Only admins can use serverMember arg. Leave blank for self.', '${role-grant|roleName} or ${role-grant|roleName|serverMember}', 1],
-    'ROLE-REVOKE': ['Have Lexi revoke a roll from a ${roles-joined|serverMember} list. Only admins can use serverMember arg. Leave blank for self.', '${role-revoke|roleName} or ${role-revoke|roleName|serverMember}', 1],
-    'SAY': ['Have Lexi send a message in the current channel.', '${say|message}', 1]
-}
 
 
 
