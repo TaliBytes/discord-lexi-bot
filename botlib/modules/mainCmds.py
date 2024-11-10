@@ -54,11 +54,7 @@ async def restart_command(msg, cmdArgs, client):
 
 
 async def say_command(msg, cmdArgs, client):
-    aMsg = ''
-    if (str(msg.author).lower() == 'ladysavant_'):
-        aMsg = cmdArgs[0]
-    else:
-        aMsg = f'@everyone, behold {msg.author.mention}\'s futile attempt to wield the power that is me!\nKNOW YOUR PLACE, FIEND! Bow before Her Brilliance for only she may wield the TRUE say command with grace, wisdom, and tomfoolery.'
+    aMsg = msg.author + ' wants me to say ' + cmdArgs[0]
 
     await msg.delete()
     await msg.channel.send(aMsg)
