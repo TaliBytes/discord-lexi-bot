@@ -54,7 +54,7 @@ async def restart_command(msg, cmdArgs, client):
 
 
 async def say_command(msg, cmdArgs, client):
-    aMsg = str(msg.author.global_name) + ' wants me to say "' + cmdArgs[0] + '"'
+    aMsg = msg.author + ' wants me to say ' + cmdArgs[0]
 
     await msg.delete()
     await msg.channel.send(aMsg)
