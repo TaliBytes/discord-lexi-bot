@@ -106,6 +106,14 @@ def syncCmdList():
 
 
 
+def getAccessLevel(user):
+    #REPLACE WITH ACTUAL LOGIC
+    globalVars.accessLevel = 3
+
+
+
+
+
 #when bot logs in
 @client.event
 async def on_ready():
@@ -113,9 +121,8 @@ async def on_ready():
 
     syncConfig()    #initialize the configuration settings
     syncCmdList()   #prepare the command list variable
-    globalVars.accessLevel = 3  #REPLACE WITH GET ACCESS LEVEL FUNCTION
 
-    
+
 
 
 
@@ -134,31 +141,29 @@ async def on_message(msg):
 
         print('Received command ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
-        #GET ACCESS LEVEL HERE
+        #determines what access level this discord user has, and stores in globalVar
+        getAccessLevel(msg.author)
 
-        globalVars.accessLevel = 3  #later this will be a function that gets their access level
-
-        if (globalVars.accessLevel == 0):
+        #insufficient permission/access level
+        if (globalVars.cmdList[cmdName][3] > globalVars.accessLevel):
             print(str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
             await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName + '} command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
+            return
 
-        #is command valid?
+        #command is not valid
         if cmdName not in globalVars.cmdList:
             print('${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
             await msg.channel.send(globalVars.cmdStrt + '{' + cmdName + '} is not a valid command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands.')
             return
-        else: 
-            #get number of arguments required for a command    
-            requiredArgs = globalVars.cmdList[cmdName][2]
 
         #not enough args supplied
-        if (len(isnone(cmdArgs,'')) < requiredArgs):
+        if (len(isnone(cmdArgs,'')) < globalVars.cmdList[cmdName][2]):
             cmdSyntax = globalVars.cmdList[cmdName][1]             #get syntax for error message
             print('Incorrect ' + globalVars.cmdStrt + '{' + cmdName + '} syntax; correct: ' + cmdSyntax)
-            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
+            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName + '} requires ' + str(globalVars.cmdList[cmdName][2]) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
-        #process the command
+        #all checks passed... process the command
         if cmdName in globalVars.cmdList:
             #get command function
             command_function = globals().get(f"{cmdName.lower()}_command")
@@ -171,6 +176,7 @@ async def on_message(msg):
             else:
                 print(f'cmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
                 await msg.channel.send(f'cmdErr-01... {cmdName} is not implemented yet.')
+
 
 
 

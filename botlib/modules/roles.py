@@ -3,8 +3,8 @@ import globalVars
 #commands that this module contains... gets added to config.cmdList
 module_cmdList = {
     #name, usage, syntax, requiredArgs
-    'ROLES': ['Ask Lexi what rolls exist on the server.', globalVars.cmdStrt + '{roles}', 0, 1],
-    'ROLES-JOINED': ['Have Lexi list what roles a server member has', globalVars.cmdStrt + '{roles-joined|serverMember}', 1, 1],
+    'ROLES-LIST': ['Ask Lexi what rolls exist on the server.', globalVars.cmdStrt + '{roles}', 0, 1],
+    'ROLES-JOINED': ['Have Lexi list which roles a server member has', globalVars.cmdStrt + '{roles-joined|serverMember}', 1, 1],
     'ROLE-CREATE': ['Have Lexi create a new server roll. Admin only.', globalVars.cmdStrt + '{roll-create|roleName}', 1, 2],
     'ROLE-DELETE': ['Have Lexi delete a server roll. Admin only.', globalVars.cmdStrt + '{roll-delete|roleName}', 1, 2],
     'ROLE-GRANT': ['Have Lexi grant a roll from the ' + globalVars.cmdStrt + '{roles} list. Only admins can use serverMember arg. Leave blank for self.', globalVars.cmdStrt + '{role-grant|roleName} or ' + globalVars.cmdStrt + '{role-grant|roleName|serverMember}', 1, 1],
@@ -14,8 +14,8 @@ module_cmdList = {
 
 
 """
-            elif (cmdName == 'ROLES'):
-                await msg.channel.send('${{ROLES}} is an incomplete feature')
+            elif (cmdName == 'ROLES-LIST'):
+                await msg.channel.send('${{ROLES-LIST}} is an incomplete feature')
 
 
             elif (cmdName == 'ROLES-JOINED'):
