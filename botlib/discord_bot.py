@@ -1,5 +1,5 @@
-import discord; from discord.ext import commands
-import config
+import discord
+import globalVars
 import importlib
 import inspect
 import os
@@ -27,16 +27,16 @@ def isnone(var, val):
 
 #parse command and return its name and args to process
 def parseCmd(cmd):
-    cmdPrfx = "${"          #prefix to denote start of cmd
-    cmdSfx = "}"            #suffix to denote end of cmd
-    cmdDelim = '|'          #delim to split cmdName and args
+    cmdPrfx = globalVars.cmdStrt + '{'          #prefix to denote start of cmd
+    cmdSfx = "}"                                #suffix to denote end of cmd
+    cmdDelim = globalVars.cmdDlm                #delim to split cmdName and args
     cmdName = None
     cmdArgs = []
 
     #reformat the command
     cmd = cmd.strip()                       #remove whitespace
-    cmd.replace('|}', '')                   #remove last arg if empty
-    cmd.replace('||', '')                   #remove empty args
+    cmd.replace(cmdDelim + '}', '')                   #remove last arg if empty
+    cmd.replace(cmdDelim + cmdDelim, '')    #remove empty args
     cmdStartPos = cmd.index(cmdPrfx) + 2    #start position for cmd name and arguments
     cmdEndPos = cmd.index(cmdSfx)           #end position for cmd name and arguments
     cmd = cmd[cmdStartPos:cmdEndPos]        #store cmd without brackets
@@ -55,12 +55,35 @@ def parseCmd(cmd):
 
 
 
-#when bot logs in
-@client.event
-async def on_ready():
-    print(f'Logged in as {client.user}.')
 
-    #import additional modules and commands
+#get the configuration settings from the file
+def syncConfig():
+    with open('root/config.txt', 'r') as file:
+        config = {}
+
+        for line in file:
+            line = line.strip()
+
+            #ignore comments and blank lines
+            if not line or line.startswith('#'): continue
+
+            if '=' in line:
+                variable, value = line.split('=', 1)
+                config[variable.strip()] = value.strip()
+
+    cmdStrt = config['commandStart']
+    cmdDlm = config['commandDelimiter']
+
+    #store config.txt value or defaults into the globalVars
+    globalVars.cmdStrt = isnone(cmdStrt, '$')
+    globalVars.cmdDlm = isnone(cmdDlm, '|')
+
+
+
+
+
+#import additional modules and commands
+def syncCmdList():
     module_dir = os.path.join(os.path.dirname(__file__), 'modules')
     for filename in os.listdir(module_dir):
         if filename.endswith('.py'):
@@ -68,16 +91,30 @@ async def on_ready():
             module = importlib.import_module(f"modules.{module_name}")
 
             #add each module's commands to cmdList
-            config.cmdList.update(module.module_cmdList)
+            globalVars.cmdList.update(module.module_cmdList)
 
             #register each async function in the module as a command
             for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
                 globals()[name] = func
 
-            #print("Registered commands:", cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
+            #print("Registered commands:", globalVars.cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
 
     #sort cmd list alphabetically
-    config.cmdList = dict(sorted(config.cmdList.items())) 
+    globalVars.cmdList = dict(sorted(globalVars.cmdList.items())) 
+
+
+
+
+
+#when bot logs in
+@client.event
+async def on_ready():
+    print(f'Logged in as {client.user}.')
+
+    syncConfig()    #initialize the configuration settings
+    syncCmdList()   #prepare the command list variable
+    globalVars.accessLevel = 3  #REPLACE WITH GET ACCESS LEVEL FUNCTION
+
     
 
 
@@ -89,32 +126,40 @@ async def on_message(msg):
     if msg.author == client.user:
         return
     
-    if (msg.content.strip().startswith('${') & msg.content.strip().endswith('}')):
+    if (msg.content.strip().startswith(globalVars.cmdStrt + '{') & msg.content.strip().endswith('}')):
         #prase command for processing
         aCmd = parseCmd(msg.content)
         cmdName = aCmd[0]
         cmdArgs = aCmd[1]
 
-        print('Received command ${' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
+        print('Received command ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
+
+        #GET ACCESS LEVEL HERE
+
+        globalVars.accessLevel = 3  #later this will be a function that gets their access level
+
+        if (globalVars.accessLevel == 0):
+            print(str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
+            await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName + '} command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
 
         #is command valid?
-        if cmdName not in config.cmdList:
+        if cmdName not in globalVars.cmdList:
             print('${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
-            await msg.channel.send('${' + cmdName + '} is not a valid command. Do ${{help}} to get a list of commands.')
+            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName + '} is not a valid command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands.')
             return
         else: 
             #get number of arguments required for a command    
-            requiredArgs = config.cmdList[cmdName][2]
+            requiredArgs = globalVars.cmdList[cmdName][2]
 
         #not enough args supplied
         if (len(isnone(cmdArgs,'')) < requiredArgs):
-            cmdSyntax = config.cmdList[cmdName][1]             #get syntax for error message
-            print('Incorrect ${' + cmdName + '} syntax; correct: ' + cmdSyntax)
-            await msg.channel.send('${' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
+            cmdSyntax = globalVars.cmdList[cmdName][1]             #get syntax for error message
+            print('Incorrect ' + globalVars.cmdStrt + '{' + cmdName + '} syntax; correct: ' + cmdSyntax)
+            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName + '} requires ' + str(requiredArgs) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
         #process the command
-        if cmdName in config.cmdList:
+        if cmdName in globalVars.cmdList:
             #get command function
             command_function = globals().get(f"{cmdName.lower()}_command")
 
