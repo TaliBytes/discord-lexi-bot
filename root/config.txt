@@ -1,3 +1,3 @@
 # Configuration settings for Lexi Discord Bot
-commandStart=!
+commandStart=$
 commandDelimiter=|
