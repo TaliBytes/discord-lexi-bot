@@ -15,7 +15,7 @@ module_cmdList = {
 
 """
             elif (cmdName == 'ROLES-LIST'):
-                await msg.channel.send('${{ROLES-LIST}} is an incomplete feature')
+                await msg.channel.send('${ROLES-LIST} is an incomplete feature')
 
 
             elif (cmdName == 'ROLES-JOINED'):

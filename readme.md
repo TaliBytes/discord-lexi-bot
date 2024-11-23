@@ -20,19 +20,20 @@ To run Lexi, you'll need:
 
 ### Installation
 
-1. Clone the repository with `git clone https://github.com/TaliBytes/discord-lexi-bot`
-2. Navigate to the repository with `cd discord-lexi-bot`
-3. Install dependencies `pip install discord.py`
-4. [Add the Discord bot to your server using the *Developer Portal*](https://realpython.com/how-to-make-a-discord-bot-python/#how-to-make-a-discord-bot-in-the-developer-portal)
-5. Put the bot token into /root/token.txt
-6. Duplicate config_example.txt and rename it to config.txt. Change any desired settings.
-7. To disable a feature, move the corresponding file from "/modules" dir to "/modules/disabled" dir. Restart Lexi.
-8. Invite Lexi to your server using [this link](https://discord.com/oauth2/authorize?client_id=1302684349828694086&permissions=582185434672246&integration_type=0&scope=bot)
+1. Clone the repository with `git clone https://github.com/TaliBytes/discord-lexi-bot`.
+2. Navigate to the repository with `cd discord-lexi-bot`.
+3. Install dependencies `pip install discord.py`.
+4. [Add the Discord bot to your server using the *Developer Portal*](https://realpython.com/how-to-make-a-discord-bot-python/#how-to-make-a-discord-bot-in-the-developer-portal).
+5. Put the bot token into /root/token.txt.
+6. Duplicate config_example.txt and rename it to config.txt. Change any desired settings (no spaces, use the following format: setting=value).
+7. In Discord goto: Settings > Advanced > turn Developer Mode on. Copy your userID by right clicking on your profile. Include value as ownerDiscordID in config.txt.
+8. To disable a feature, move the corresponding file from "/modules" dir to "/modules/disabled/" dir. Restart Lexi.
+9. Invite Lexi to your server!
 
 ### Running Lexi
 
-Lexi should now be online and ready to use in the server of your choosing.
-Run the python script using an internet-enabled device.
+Run the discord_bot.py script using an internet-enabled device.
+Lexi should now be online and ready to use in any server you previously invited her to.
 
 ## Syntax & Usage
 

@@ -4,6 +4,8 @@ import importlib
 import inspect
 import os
 
+
+
 #config
 tokenFile = open('root/token.txt', 'r')
 aToken = tokenFile.readline().strip()
@@ -73,10 +75,20 @@ def syncConfig():
 
     cmdStrt = config['commandStart']
     cmdDlm = config['commandDelimiter']
+    ownerID = config['ownerDiscordID']
 
     #store config.txt value or defaults into the globalVars
     globalVars.cmdStrt = isnone(cmdStrt, '$')
     globalVars.cmdDlm = isnone(cmdDlm, '|')
+    globalVars.ownerID = int(ownerID)
+
+    #fatal errors... bot MUST have certain config settings to run correctly
+    if globalVars.cmdStrt is None or globalVars.cmdDlm is None or globalVars.ownerID in (0, None):
+        print('\nFATAL CONFIGURATION ERROR!')
+        if (globalVars.cmdStrt is None): print('Must include commandStart value in config.txt')
+        if (globalVars.cmdDlm is None): print('Must include commandDelimiter value in config.txt')
+        if (globalVars.ownerID in (0, None)): print('Must include ownerDiscordID value in config.txt')
+        os._exit(1)
 
 
 
@@ -97,7 +109,7 @@ def syncCmdList():
             for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
                 globals()[name] = func
 
-            #print("Registered commands:", globalVars.cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
+            #print('\nRegistered commands:', globalVars.cmdList) #USE FOR DEBUGGING WHAT COMMANDS ARE ACTIVE
 
     #sort cmd list alphabetically
     globalVars.cmdList = dict(sorted(globalVars.cmdList.items())) 
@@ -106,9 +118,10 @@ def syncCmdList():
 
 
 
-def getAccessLevel(user):
+def getAccessLevel(discordID):
     #REPLACE WITH ACTUAL LOGIC
-    globalVars.accessLevel = 3
+    globalVars.accessLevel = 3 if (globalVars.ownerID == discordID) else 1
+    return(globalVars.accessLevel)
 
 
 
@@ -117,7 +130,7 @@ def getAccessLevel(user):
 #when bot logs in
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user}.')
+    print(f'Logged in as {client.user}.\n')
 
     syncConfig()    #initialize the configuration settings
     syncCmdList()   #prepare the command list variable
@@ -139,28 +152,28 @@ async def on_message(msg):
         cmdName = aCmd[0]
         cmdArgs = aCmd[1]
 
-        print('Received command ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
+        print('\nReceived command ' + globalVars.cmdStrt + '{' + cmdName + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
         #determines what access level this discord user has, and stores in globalVar
-        getAccessLevel(msg.author)
+        userAccessLevel = getAccessLevel(msg.author.id)
 
         #insufficient permission/access level
-        if (globalVars.cmdList[cmdName][3] > globalVars.accessLevel):
-            print(str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
-            await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName + '} command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
+        if (globalVars.cmdList[cmdName][3] > userAccessLevel):
+            print('\n' + str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
+            await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
             return
 
         #command is not valid
         if cmdName not in globalVars.cmdList:
-            print('${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
-            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName + '} is not a valid command. Do ' + globalVars.cmdStrt + '{{help}} to get a list of commands.')
+            print('\n' + '${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
+            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName.lower() + '} is not a valid command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands.')
             return
 
         #not enough args supplied
         if (len(isnone(cmdArgs,'')) < globalVars.cmdList[cmdName][2]):
             cmdSyntax = globalVars.cmdList[cmdName][1]             #get syntax for error message
-            print('Incorrect ' + globalVars.cmdStrt + '{' + cmdName + '} syntax; correct: ' + cmdSyntax)
-            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName + '} requires ' + str(globalVars.cmdList[cmdName][2]) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
+            print('\n' + 'Incorrect ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} syntax; correct: ' + cmdSyntax)
+            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName.lower() + '} requires ' + str(globalVars.cmdList[cmdName][2]) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
         #all checks passed... process the command
@@ -174,8 +187,8 @@ async def on_message(msg):
 
             #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             else:
-                print(f'cmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
-                await msg.channel.send(f'cmdErr-01... {cmdName} is not implemented yet.')
+                print(f'\ncmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
+                await msg.channel.send(f'cmdErr-01... {cmdName.lower()} is not implemented yet.')
 
 
 

@@ -11,3 +11,4 @@ cmdList = {
 #command prefix and delimiter
 cmdStrt = None
 cmdDlm = None
+ownerID = None

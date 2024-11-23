@@ -1,3 +1,4 @@
 # Configuration settings for Lexi Discord Bot
 commandStart=$
 commandDelimiter=|
+ownerDiscordID=123456789012345678
