@@ -1,4 +1,7 @@
-#ignored token file
+#ignored, unneccessary files, token file, and config file
 botlib/__pycache__/
 botlib/modules/__pycache__/
 root/token.txt
+
+#config file may be different from machine to machine... replace with config_example.txt for running instances of bot 
+root/config.txt
