@@ -24,8 +24,10 @@ To run Lexi, you'll need:
 2. Navigate to the repository with `cd discord-lexi-bot`
 3. Install dependencies `pip install discord.py`
 4. [Add the Discord bot to your server using the *Developer Portal*](https://realpython.com/how-to-make-a-discord-bot-python/#how-to-make-a-discord-bot-in-the-developer-portal)
-5. To disable a feature, move the corresponding file from "/modules" dir to "/modules/disabled" dir. Restart Lexi.
-6. Invite Lexi to your server using [this link](https://discord.com/oauth2/authorize?client_id=1302684349828694086&permissions=582185434672246&integration_type=0&scope=bot)
+5. Put the bot token into /root/token.txt
+6. Duplicate config_example.txt and rename it to config.txt. Change any desired settings.
+7. To disable a feature, move the corresponding file from "/modules" dir to "/modules/disabled" dir. Restart Lexi.
+8. Invite Lexi to your server using [this link](https://discord.com/oauth2/authorize?client_id=1302684349828694086&permissions=582185434672246&integration_type=0&scope=bot)
 
 ### Running Lexi
 
