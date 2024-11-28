@@ -13,30 +13,43 @@ module_cmdList = {
 
 
 
-async def roles_list_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+def roles_sync():
+    print('incomplete')
+
+
+async def roles_list_command(msg, cmdArgs, client):  
+    #LATER THIS WILL ONLY SEND ROLES THAT THE REQUESTER CAN JOIN/LEAVE
+    roles = msg.guild.roles
+    role_list = ''
+
+    for r in roles:
+        if 'everyone' in r.name:
+            continue                                    #@everyone is technically a discord role on every server... skip to avoid pinging everyone
+        role_list = role_list + str(r.name) + '\n'      #compile list
+        
+    await msg.channel.send(role_list)                   #send full list
 
 
 
 async def roles_joined_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+    await msg.channel.send('{ROLES_JOINED} is an incomplete feature')
 
 
 
 async def roles_create_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+    await msg.channel.send('{ROLE_CREATE} is an incomplete feature')
 
 
 
 async def roles_delete_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+    await msg.channel.send('{ROLE_DELETE} is an incomplete feature')
 
 
 
 async def roles_grant_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+    await msg.channel.send('{ROLE_GRANT} is an incomplete feature')
 
 
 
 async def roles_revoke_command(msg, cmdArgs, client):
-    await msg.channel.send('{ROLES_LIST} is an incomplete feature')
+    await msg.channel.send('{ROLE_REVOKE} is an incomplete feature')

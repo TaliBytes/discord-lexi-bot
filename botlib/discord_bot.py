@@ -83,7 +83,12 @@ def syncConfig():
     globalVars.ownerID = int(ownerID)
 
     #fatal errors... bot MUST have certain config settings to run correctly
-    if globalVars.cmdStrt is None or globalVars.cmdDlm is None or globalVars.ownerID in (0, None):
+    isFatalError = 0
+    if globalVars.cmdStrt is None:          isFatalError = 1
+    if globalVars.cmdDlm is None:           isFatalError = 1
+    if globalVars.ownerID in (0, None):     isFatalError = 1
+
+    if isFatalError:
         print('\nFATAL CONFIGURATION ERROR!')
         if (globalVars.cmdStrt is None): print('Must include commandStart value in config.txt')
         if (globalVars.cmdDlm is None): print('Must include commandDelimiter value in config.txt')
@@ -118,8 +123,21 @@ def syncCmdList():
 
 
 
+def syncGuild(guild):
+    print('Non functional' + str(guild))
+    # create sqlite database that stores the guilds.
+    # for each guild
+        # get and store the roles with allowMemberJoinLeave=0 (must manually change later)
+        # get and store members list
+        # etc
+
+
+
+
+
 def getAccessLevel(discordID):
     #REPLACE WITH ACTUAL LOGIC
+    #level 1 for server members, level 2 for bot moderators (assigned by bot owner), level 3 for bot owner (dev)
     globalVars.accessLevel = 3 if (globalVars.ownerID == discordID) else 1
     return(globalVars.accessLevel)
 
@@ -134,6 +152,9 @@ async def on_ready():
 
     syncConfig()    #initialize the configuration settings
     syncCmdList()   #prepare the command list variable
+
+    for guild in client.guilds:
+        syncGuild(guild)     #the bot is connected to x number of guilds... sync to sqlite db
 
 
 
@@ -182,8 +203,11 @@ async def on_message(msg):
             command_function = globals().get(f"{cmdName.lower()}_command")
 
             #execute command function
-            if command_function:
-                await command_function(msg, cmdArgs, client)
+            try:
+                if command_function:
+                    await command_function(msg, cmdArgs, client)
+            except:
+                await msg.channel.send('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Please let a developer know about this error.')
 
             #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             else:
