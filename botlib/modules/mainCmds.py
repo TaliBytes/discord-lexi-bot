@@ -59,6 +59,7 @@ async def ping_command(msg, cmdArgs, client):
 async def restart_command(msg, cmdArgs, client):
     await msg.delete()  #hide the command syntax from non-admins
     await msg.channel.send('Restart initiated by ' + str(msg.author) + '. Restarting now...')
+    await globalVars.conn.close
     await client.close()
 
     # Restart bot
@@ -79,6 +80,7 @@ async def say_command(msg, cmdArgs, client):
 async def shutdown_command(msg, cmdArgs, client):
     await msg.delete()  #hide the command syntax from non-admins
     await msg.channel.send('Shutdown initiated by ' + str(msg.author) + '. Goodnight everyone!')
+    await globalVars.conn.close
 
     print('\nShutting down...')
     os._exit(0) #shutdown reporting success

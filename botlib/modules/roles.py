@@ -47,6 +47,7 @@ async def roles_delete_command(msg, cmdArgs, client):
 
 
 async def roles_grant_command(msg, cmdArgs, client):
+    #db - requiredAccessLevelJoinLeave (the level you have to be to join/leave a role... 0 = unjoinable)
     await msg.channel.send('{ROLE_GRANT} is an incomplete feature')
 
 

@@ -8,7 +8,8 @@ cmdList = {
     #name, usage, syntax, requiredArgs, requiredAccessLevel
 }
 
-#command prefix and delimiter
-cmdStrt = None
-cmdDlm = None
-ownerID = None
+cmdStrt = None  #prefix for commands
+cmdDlm = None   #delimiter for commands
+conn = None     #global sqlite connection
+hasDB = False   #default is db assumed disconnected
+ownerID = None  #dev's discord userID

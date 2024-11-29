@@ -3,6 +3,7 @@ import globalVars
 import importlib
 import inspect
 import os
+import sqlite3 as SQL
 
 
 
@@ -18,7 +19,7 @@ client = discord.Client(intents=intents)
 
 
 
-#return val if var is null
+#return val if var is None
 def isnone(var, val):
     if var is None:
         return val
@@ -123,13 +124,122 @@ def syncCmdList():
 
 
 
+#creates or accesses the database (and tables)
+def syncDatabase():
+    dbConnected = False
+
+    #attempt connection
+    try:
+        dbExists = os.path.exists('root/lexi.db')
+        if not dbExists:
+            try:
+                dbFile = open('root/lexi.db', 'x')
+                print('\nCreated sqlite db')
+                globalVars.conn = SQL.connect('root/lexi.db')
+                print('\nConnected to local db')
+                dbConnected = True
+            except:
+                print('\nFailed to create sqlite db')
+                dbConnected = False
+        else:
+            globalVars.conn = SQL.connect('root/lexi.db')
+            print('\nConnected to local db')
+            dbConnected = True
+    except:
+        print('\nFailed database connection')
+
+    #create tables if they don't exist
+    if dbConnected == True:
+        try:
+            #guilds table (stores list of guilds this bot is connected to)
+            globalVars.conn.execute("CREATE TABLE IF NOT EXISTS guilds (guildID INTEGER PRIMARY KEY AUTOINCREMENT, guildDiscordID INTEGER NOT NULL, guildName TEXT)")
+            #guildMembers table (stores a list of members for foreign key refs)
+            #guildBotAdmins table (stores records of which members have what access level for bot commands)
+            #guildRoles table (stores discord guilds roles, minimum level to self-join)
+            #guildRolesJoined table (what roles a guild member has joined)
+            globalVars.conn.commit
+        except:
+            print('\nFailed to create or check database tables')
+            print('\nOther tables need to be created')
+            dbConnected = False
+
+    #return success or fail status... determines if certain functions will work
+    print(dbConnected)
+    return (bool(dbConnected))
+    
+
+
+
+
+#stores data about the guild
 def syncGuild(guild):
-    print('Non functional' + str(guild))
-    # create sqlite database that stores the guilds.
-    # for each guild
-        # get and store the roles with allowMemberJoinLeave=0 (must manually change later)
-        # get and store members list
-        # etc
+    guildName = str(guild.name)
+    guildID = int(guild.id)
+
+    #check if the guild is stored in the db
+    query = globalVars.conn.execute(
+        """
+        SELECT 
+        CASE WHEN EXISTS (
+            SELECT guildID FROM guilds WHERE guildDiscordID = ?
+        ) THEN 1
+        ELSE 0 END AS guildExists
+        """,
+        (guildID,)
+    )
+    for rs in query:
+        guildExists = bool(rs[0])
+
+
+    #create guild record if it doesn't exist in db
+    if not guildExists:
+        try:
+            query = globalVars.conn.execute(
+                """
+                    INSERT INTO guilds (guildDiscordID, guildName)
+                    VALUES (?, ?)
+                """,
+                (guildID, guildName)
+            )
+            guildExists = True
+        except:
+            print(f'\nFailed to create guild record in DB for "{guildName}."')
+        
+
+    #only continue to the guild exists in the db
+    if guildExists:
+        try:
+            syncGuildMembers(guild) #sync the members into the db
+            syncGuildRoles(guild)   #sync roles into the db
+            syncGuildRolesJoined(guild) #sync which roles members have joined into the db
+            globalVars.hasDB = False #REMOVE THIS LINE LATER... FORCES DB TO BE DISABLED SINCE NO DB FEATURES ARE IN PLACE YET
+        except:
+            print('Failed to sync members, roles, etc... from guild to db')
+            globalVars.hasDB = False    #since nothing can sync in db, disable db based features
+
+
+
+
+
+#checks that each guild member is recorded in the database
+def syncGuildMembers(guild):
+    print('sync members incomplete')
+
+
+
+
+
+#checks that each guild member is recorded in the database
+def syncGuildRoles(guild):
+    print('sync roles incomplete')
+
+
+
+
+
+#checks that each guild member is recorded in the database
+def syncGuildRolesJoined(guild):
+    print('sync joined roles incomplete')
 
 
 
@@ -152,9 +262,14 @@ async def on_ready():
 
     syncConfig()    #initialize the configuration settings
     syncCmdList()   #prepare the command list variable
+    globalVars.hasDB = bool(syncDatabase())  #prepare database, store return value for later
 
-    for guild in client.guilds:
-        syncGuild(guild)     #the bot is connected to x number of guilds... sync to sqlite db
+    print(globalVars.hasDB)
+    if globalVars.hasDB:
+        for guild in client.guilds:
+            syncGuild(guild)     #the bot is connected to x number of guilds... sync to db
+    else:
+        print('\nDatabase is not connected so featuers such as roles will not work.')
 
 
 
