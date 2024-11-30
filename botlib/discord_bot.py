@@ -91,9 +91,9 @@ def syncConfig():
 
     if isFatalError:
         print('\nFATAL CONFIGURATION ERROR!')
-        if (globalVars.cmdStrt is None): print('Must include commandStart value in config.txt')
-        if (globalVars.cmdDlm is None): print('Must include commandDelimiter value in config.txt')
-        if (globalVars.ownerID in (0, None)): print('Must include ownerDiscordID value in config.txt')
+        if (globalVars.cmdStrt is None): print('\nMust include commandStart value in config.txt')
+        if (globalVars.cmdDlm is None): print('\nMust include commandDelimiter value in config.txt')
+        if (globalVars.ownerID in (0, None)): print('\nMust include ownerDiscordID value in config.txt')
         os._exit(1)
 
 
@@ -164,7 +164,6 @@ def syncDatabase():
             dbConnected = False
 
     #return success or fail status... determines if certain functions will work
-    print(dbConnected)
     return (bool(dbConnected))
     
 
@@ -214,7 +213,7 @@ def syncGuild(guild):
             syncGuildRolesJoined(guild) #sync which roles members have joined into the db
             globalVars.hasDB = False #REMOVE THIS LINE LATER... FORCES DB TO BE DISABLED SINCE NO DB FEATURES ARE IN PLACE YET
         except:
-            print('Failed to sync members, roles, etc... from guild to db')
+            print('\nFailed to sync members, roles, etc... from guild to db')
             globalVars.hasDB = False    #since nothing can sync in db, disable db based features
 
 
@@ -264,7 +263,6 @@ async def on_ready():
     syncCmdList()   #prepare the command list variable
     globalVars.hasDB = bool(syncDatabase())  #prepare database, store return value for later
 
-    print(globalVars.hasDB)
     if globalVars.hasDB:
         for guild in client.guilds:
             syncGuild(guild)     #the bot is connected to x number of guilds... sync to db
