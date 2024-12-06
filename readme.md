@@ -47,9 +47,8 @@ To send commands to Lexi a specific syntax is used. It is broken down as follows
 
 For example:
 
-- `S{say|message}` - Lexi Bot will repeat a message of your choosing and delete your command.
-- more examples coming soon (or maybe not)!
-Note: The available commands and features may be updated over time. Use `${help}` for the latest list.
+- `${say|message}` - Lexi Bot will repeat a message of your choosing and delete your command.
+- Note: The available commands and features may be updated over time. Use `${help}` for the latest list.
 
 ## Directories
 
