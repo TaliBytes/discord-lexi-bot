@@ -288,6 +288,12 @@ async def on_message(msg):
 
         print('\nReceived command ' + globalVars.cmdStrt + '{' + cmdName + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
+        #command does not exist
+        if cmdName not in globalVars.cmdList:
+            print('\n' + '${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
+            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName.lower() + '} is not a valid command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands.')
+            return
+        
         #determines what access level this discord user has, and stores in globalVar
         userAccessLevel = getAccessLevel(msg.author.id)
 
@@ -295,12 +301,6 @@ async def on_message(msg):
         if (globalVars.cmdList[cmdName][3] > userAccessLevel):
             print('\n' + str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
             await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
-            return
-
-        #command is not valid
-        if cmdName not in globalVars.cmdList:
-            print('\n' + '${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
-            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName.lower() + '} is not a valid command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands.')
             return
 
         #not enough args supplied
@@ -311,21 +311,22 @@ async def on_message(msg):
             return
 
         #all checks passed... process the command
-        if cmdName in globalVars.cmdList:
-            #get command function
-            command_function = globals().get(f"{cmdName.lower()}_command")
+        #get command function name
+        command_function = globals().get(f"{cmdName.lower()}_command")
 
-            #execute command function
-            try:
-                if command_function:
-                    await command_function(msg, cmdArgs, client)
-            except:
-                await msg.channel.send('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Please let a developer know about this error.')
+        #execute command function
+        try:
+            if command_function:
+                await command_function(msg, cmdArgs, client)
 
             #the cmd logic is missing or cmd is incorrectly considered valid; so this debug message is sent.
             else:
                 print(f'\ncmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
                 await msg.channel.send(f'cmdErr-01... {cmdName.lower()} is not implemented yet.')
+        except Exception as err:
+            print('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Error: ' + str(err))
+            await msg.channel.send('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Please let a developer know about this error.')
+
 
 
 

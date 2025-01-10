@@ -59,8 +59,8 @@ async def ping_command(msg, cmdArgs, client):
 async def restart_command(msg, cmdArgs, client):
     await msg.delete()  #hide the command syntax from non-admins
     await msg.channel.send('Restart initiated by ' + str(msg.author) + '. Restarting now...')
-    await globalVars.conn.close
-    await client.close()
+    globalVars.conn.close
+    client.close()
 
     # Restart bot
     print('\nRestarting...')
