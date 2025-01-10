@@ -30,29 +30,24 @@ def isnone(var, val):
 
 #parse command and return its name and args to process
 def parseCmd(cmd):
-    cmdPrfx = globalVars.cmdStrt + '{'          #prefix to denote start of cmd
-    cmdSfx = "}"                                #suffix to denote end of cmd
-    cmdDelim = globalVars.cmdDlm                #delim to split cmdName and args
+    cmdDelim = globalVars.cmdDlm            #delim to split cmdName and args
     cmdName = None
     cmdArgs = []
 
     #reformat the command
     cmd = cmd.strip()                       #remove whitespace
-    cmd.replace(cmdDelim + '}', '')                   #remove last arg if empty
     cmd.replace(cmdDelim + cmdDelim, '')    #remove empty args
-    cmdStartPos = cmd.index(cmdPrfx) + 2    #start position for cmd name and arguments
-    cmdEndPos = cmd.index(cmdSfx)           #end position for cmd name and arguments
-    cmd = cmd[cmdStartPos:cmdEndPos]        #store cmd without brackets
+    cmd = cmd[1:]                           #store cmd without prefix (ie $ by default)
 
     if (cmdDelim not in cmd):
-        cmdName = cmd                       #whole cmd is the name
-        cmdArgs = None                      #no args were supplied
+        cmdName = cmd                       #cmd doesn't have any args
+        cmdArgs = None                      #no args were supplied, therefore NoneType
 
     else:
-        cmdArgs = cmd.split(cmdDelim)       #extract arguments from full command
-        cmdName = cmdArgs[0]                #extract name from arglist (first argument)
-        cmdArgs = cmdArgs[1:]               #remove cmdName from args  (remaining arguments)
-
+        cmdArgs = cmd.split(cmdDelim)       #split full command into args array
+        cmdName = cmdArgs[0]                #extract name from args array (first argument)
+        cmdArgs = cmdArgs[1:]               #remove cmdName from args array (remaining arguments)
+        
     return(cmdName.upper(), cmdArgs)
 
 
@@ -280,18 +275,20 @@ async def on_message(msg):
     if msg.author == client.user:
         return
     
-    if (msg.content.strip().startswith(globalVars.cmdStrt + '{') & msg.content.strip().endswith('}')):
-        #prase command for processing
+    if (msg.content.strip().startswith(globalVars.cmdStrt)):
+        #prase message for command processing because it begins with cmdPrefix ($)
         aCmd = parseCmd(msg.content)
         cmdName = aCmd[0]
-        cmdArgs = aCmd[1]
+        cmdArgs = [arg.strip() for arg in aCmd[1]]  #get cmdArgs and strip whitespace simultaneously
 
-        print('\nReceived command ' + globalVars.cmdStrt + '{' + cmdName + '} from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
+        
+
+        print('\nReceived command ' + globalVars.cmdStrt + cmdName + ' from ' + str(msg.author) + ' with args ' + (', '.join(f'"{arg}"' for arg in cmdArgs) if cmdArgs else 'not supplied'))
 
         #command does not exist
         if cmdName not in globalVars.cmdList:
-            print('\n' + '${' + cmdName + '} is an invalid command. Failed discord_bot cmdName test.')
-            await msg.channel.send(globalVars.cmdStrt + '{' + cmdName.lower() + '} is not a valid command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands.')
+            print('\n' + globalVars.cmdStrt + cmdName + ' is an invalid command. Failed discord_bot cmdName test.')
+            await msg.channel.send(globalVars.cmdStrt + cmdName.lower() + ' is not a valid command. Do ' + globalVars.cmdStrt + 'help to get a list of commands.')
             return
         
         #determines what access level this discord user has, and stores in globalVar
@@ -299,15 +296,15 @@ async def on_message(msg):
 
         #insufficient permission/access level
         if (globalVars.cmdList[cmdName][3] > userAccessLevel):
-            print('\n' + str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + '{' + cmdName + '} command due to insufficient permissions.')
-            await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} command. Do ' + globalVars.cmdStrt + '{help} to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
+            print('\n' + str(msg.author) + ' cannot access the ' + globalVars.cmdStrt + cmdName + ' command due to insufficient permissions.')
+            await msg.channel.send('You don\'t have sufficient permissions to access the ' + globalVars.cmdStrt + cmdName.lower() + ' command. Do ' + globalVars.cmdStrt + 'help to get a list of commands you can access. If you beleive this is in error, please contact a server administrator.')
             return
 
         #not enough args supplied
         if (len(isnone(cmdArgs,'')) < globalVars.cmdList[cmdName][2]):
             cmdSyntax = globalVars.cmdList[cmdName][1]             #get syntax for error message
-            print('\n' + 'Incorrect ' + globalVars.cmdStrt + '{' + cmdName.lower() + '} syntax; correct: ' + cmdSyntax)
-            await msg.channel.send(globalVars.cmdStrt  +'{' + cmdName.lower() + '} requires ' + str(globalVars.cmdList[cmdName][2]) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
+            print('\n' + 'Incorrect ' + globalVars.cmdStrt + cmdName.lower() + ' syntax; correct: ' + cmdSyntax)
+            await msg.channel.send(globalVars.cmdStrt + cmdName.lower() + ' requires ' + str(globalVars.cmdList[cmdName][2]) + ' argument(s); ' + 'Syntax: ' + cmdSyntax)
             return
 
         #all checks passed... process the command
@@ -324,8 +321,8 @@ async def on_message(msg):
                 print(f'\ncmdErr-01... {cmdName} passed the "cmdName in cmdList" check, but logic is absent.')
                 await msg.channel.send(f'cmdErr-01... {cmdName.lower()} is not implemented yet.')
         except Exception as err:
-            print('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Error: ' + str(err))
-            await msg.channel.send('An error occurred while attempting ' + globalVars.cmdStrt + '{' + cmdName.lower() + '}. Please let a developer know about this error.')
+            print('An error occurred while attempting ' + globalVars.cmdStrt + cmdName.lower() + '. Error: ' + str(err))
+            await msg.channel.send('An error occurred while attempting ' + globalVars.cmdStrt + cmdName.lower() + '. Please let a developer know about this error.')
 
 
 

@@ -7,11 +7,11 @@ import sys
 #commands that this module contains... gets added to config.cmdList
 module_cmdList = {
     #name, usage, syntax, requiredArgs, required access level (1 - normal user, 2 - admin, 3 - bot owner)
-    'HELP': ['Have Lexi tell list all commands (' + globalVars.cmdStrt + '{help}) or details about one command (' + globalVars.cmdStrt + '{help|cmdName}).', globalVars.cmdStrt + '{help} or ' + globalVars.cmdStrt + '{help|cmdName}', 0, 1],
-    'PING': ['Pings the server and Lexi returns information about the author and bot in the console.', globalVars.cmdStrt + '{ping}', 0, 3],
-    'RESTART': ['Lexi seems to be having trouble or has an update? Use restart to restart her.', globalVars.cmdStrt + '{restart}', 0, 2],
-    'SAY': ['Have Lexi send a message in the current channel.', globalVars.cmdStrt + '{say|message}', 1, 1],
-    'SHUTDOWN': ['Bring Lexi offline. Must reinitialize from the server console.', globalVars.cmdStrt + '{shutdown}', 0, 3]
+    'HELP': ['Have Lexi tell list all commands (' + globalVars.cmdStrt + 'help) or details about one command (' + globalVars.cmdStrt + 'help|cmdName).', globalVars.cmdStrt + 'help or ' + globalVars.cmdStrt + 'help|cmdName', 0, 1],
+    'PING': ['Pings the server and Lexi returns information about the author and bot in the console.', globalVars.cmdStrt + 'ping', 0, 3],
+    'RESTART': ['Lexi seems to be having trouble or has an update? Use restart to restart her.', globalVars.cmdStrt + 'restart', 0, 2],
+    'SAY': ['Have Lexi send a message in the current channel.', globalVars.cmdStrt + 'say|message', 1, 1],
+    'SHUTDOWN': ['Bring Lexi offline. Must reinitialize from the server console.', globalVars.cmdStrt + 'shutdown', 0, 3]
 }
 
 
@@ -23,7 +23,7 @@ async def help_command(msg, cmdArgs, client):
         #lookup of command failed
         if targetCmdName not in globalVars.cmdList:
             print(f'\n{globalVars.cmdStrt}{targetCmdName} is an invalid command. Failed help command lookup.')
-            aMsg = f'{targetCmdName.lower()} is not a valid command. Use {globalVars.cmdStrt}{help} for a list of commands.'
+            aMsg = f'{targetCmdName.lower()} is not a valid command. Use {globalVars.cmdStrt}help for a list of commands.'
         
         #specific help for one command
         else:
