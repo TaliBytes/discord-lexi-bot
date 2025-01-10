@@ -44,9 +44,10 @@ def parseCmd(cmd):
         cmdArgs = None                      #no args were supplied, therefore NoneType
 
     else:
-        cmdArgs = cmd.split(cmdDelim)       #split full command into args array
-        cmdName = cmdArgs[0]                #extract name from args array (first argument)
-        cmdArgs = cmdArgs[1:]               #remove cmdName from args array (remaining arguments)
+        cmdArgs = [arg.strip() for arg in cmd.split(cmdDelim)]  #split full command into args array... remove whitespace simultaneously
+        #cmdArgs = cmd.split(cmdDelim)       
+        cmdName = cmdArgs[0]                                    #extract name from args array (first argument)
+        cmdArgs = cmdArgs[1:]                                   #remove cmdName from args array (remaining arguments)
         
     return(cmdName.upper(), cmdArgs)
 
@@ -279,7 +280,7 @@ async def on_message(msg):
         #prase message for command processing because it begins with cmdPrefix ($)
         aCmd = parseCmd(msg.content)
         cmdName = aCmd[0]
-        cmdArgs = [arg.strip() for arg in aCmd[1]]  #get cmdArgs and strip whitespace simultaneously
+        cmdArgs = aCmd[1]
 
         
 
